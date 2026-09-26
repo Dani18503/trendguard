@@ -1,0 +1,17 @@
+# ============================================
+# TrendGuard - Dependencias del proyecto
+# ============================================
+# Instalar con: pip install -r requirements.txt
+
+# --- Exchange ---
+ccxt>=4.2.0
+
+# --- Telegram ---
+python-telegram-bot>=21.0
+
+# --- Configuracion ---
+python-dotenv>=1.0.0
+
+# --- Datos y calculos (Fase 2) ---
+pandas>=2.2.0
+numpy>=1.26.0
