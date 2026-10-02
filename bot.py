@@ -1,9 +1,10 @@
 """
-TrendGuard - Entrypoint principal
-Envia un mensaje de prueba al canal de Telegram.
+TrendGuard - Entrypoint principal (modo servicio)
 """
 import logging
+import signal
 import sys
+import time
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
@@ -15,17 +16,11 @@ log_dir = Path(__file__).parent / "logs"
 log_dir.mkdir(exist_ok=True)
 log_file = log_dir / "bot.log"
 
-handler = RotatingFileHandler(
-    log_file, maxBytes=5_000_000, backupCount=3, encoding="utf-8"
-)
-handler.setFormatter(
-    logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-)
+handler = RotatingFileHandler(log_file, maxBytes=5_000_000, backupCount=3, encoding="utf-8")
+handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
 
 console = logging.StreamHandler(sys.stdout)
-console.setFormatter(
-    logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
-)
+console.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
 
 logging.basicConfig(
     level=getattr(logging, config.LOG_LEVEL, logging.INFO),
@@ -34,29 +29,42 @@ logging.basicConfig(
 
 logger = logging.getLogger("trendguard")
 
+running = True
+
+
+def handle_shutdown(signum, frame):
+    global running
+    logger.info("Senal recibida. Cerrando TrendGuard...")
+    running = False
+
 
 def run():
-    logger.info("TrendGuard iniciando...")
+    global running
+    signal.signal(signal.SIGTERM, handle_shutdown)
+    signal.signal(signal.SIGINT, handle_shutdown)
+
+    logger.info("TrendGuard iniciando en modo servicio...")
 
     mensaje = (
-        "TrendGuard esta vivo\n"
+        "TrendGuard ONLINE\n"
         "\n"
         "Symbol: " + config.SYMBOL + "\n"
         "Timeframe: " + config.TIMEFRAME + "\n"
         "Leverage: " + str(config.LEVERAGE) + "x\n"
         "Modo: " + config.MODE + "\n"
-        "Testnet: " + str(config.BINANCE_TESTNET) + "\n"
         "\n"
-        "Primer mensaje de prueba. Todo en orden."
+        "Servicio systemd activo."
     )
+    send_message_sync(mensaje)
 
-    exito = send_message_sync(mensaje)
+    counter = 0
+    while running:
+        counter += 1
+        logger.info(f"TrendGuard activo - heartbeat #{counter}")
+        time.sleep(60)
 
-    if exito:
-        logger.info("Test completado con exito")
-        return 0
-    logger.error("Test fallo")
-    return 1
+    logger.info("TrendGuard detenido correctamente")
+    return 0
 
 
 if __name__ == "__main__":
