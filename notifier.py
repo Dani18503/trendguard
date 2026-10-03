@@ -1,33 +1,23 @@
-"""
-TrendGuard - Modulo de notificaciones a Telegram
-"""
-import logging
-import asyncio
-from telegram import Bot
-from telegram.error import TelegramError
+# /home/ubuntu/trendguard/notifier.py
+import os
+import requests
+from dotenv import load_dotenv
 
-import config
+load_dotenv()
 
-logger = logging.getLogger(__name__)
-
-
-async def send_message(text):
+def send_telegram_message(message):
+    """Envía un mensaje a Telegram usando las credenciales del .env"""
+    token = os.getenv('TELEGRAM_BOT_TOKEN')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID')
+    
+    if not token or not chat_id:
+        print("⚠️ Faltan credenciales de Telegram en .env")
+        return
+        
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
+    
     try:
-        bot = Bot(token=config.TELEGRAM_BOT_TOKEN)
-        await bot.send_message(
-            chat_id=config.TELEGRAM_CHAT_ID,
-            text=text,
-            parse_mode="Markdown"
-        )
-        logger.info("Mensaje enviado a Telegram")
-        return True
-    except TelegramError as e:
-        logger.error("Error Telegram: " + str(e))
-        return False
+        requests.post(url, json=payload)
     except Exception as e:
-        logger.error("Error inesperado: " + str(e))
-        return False
-
-
-def send_message_sync(text):
-    return asyncio.run(send_message(text))
+        print(f"Error enviando a Telegram: {e}")
