@@ -3,10 +3,9 @@ import os
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv('/home/ubuntu/trendguard/.env')
 
 def send_telegram_message(message):
-    """Envía un mensaje a Telegram usando las credenciales del .env"""
     token = os.getenv('TELEGRAM_BOT_TOKEN')
     chat_id = os.getenv('TELEGRAM_CHAT_ID')
     
@@ -18,6 +17,7 @@ def send_telegram_message(message):
     payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}
     
     try:
-        requests.post(url, json=payload)
+        # ✅ AÑADIDO: timeout=10 para que no se quede colgado si Telegram no responde
+        requests.post(url, json=payload, timeout=10)
     except Exception as e:
         print(f"Error enviando a Telegram: {e}")
