@@ -1,0 +1,46 @@
+services:
+  trendguard-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: trendguard:latest
+    container_name: trendguard-bot
+    restart: unless-stopped
+    env_file: .env
+    working_dir: /home/ubuntu/trendguard
+    command: python -u bot.py
+    volumes:
+      - ./state.json:/home/ubuntu/trendguard/state.json
+      - ./runtime_config.json:/home/ubuntu/trendguard/runtime_config.json
+    networks:
+      - trendguard-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  trendguard-panel:
+    image: trendguard:latest
+    container_name: trendguard-panel
+    restart: unless-stopped
+    working_dir: /home/ubuntu/trendguard
+    command: streamlit run panel/app.py --server.port=8501 --server.address=0.0.0.0 --server.headless=true --browser.gatherUsageStats=false
+    ports:
+      - "8501:8501"
+    env_file: .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.env:/home/ubuntu/trendguard/.env
+      - ./runtime_config.json:/home/ubuntu/trendguard/runtime_config.json
+    environment:
+      - BOT_CONTAINER=trendguard-bot
+      - PROJECT_DIR=/home/ubuntu/trendguard
+    networks:
+      - trendguard-net
+    depends_on:
+      - trendguard-bot
+
+networks:
+  trendguard-net:
+    driver: bridge

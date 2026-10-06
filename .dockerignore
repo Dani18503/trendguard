@@ -1,0 +1,13 @@
+venv/
+_pycache_/
+*.pyc
+*.pyo
+.git/
+.gitignore
+.env
+backups/
+logs/
+*.log
+*.pem
+*.tar.gz
+.DS_Store
