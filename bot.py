@@ -78,6 +78,10 @@ while True:
             max_price=max_price, min_price=min_price
         )
 
+        # FIX FASE 6.1: garantizar que price nunca sea None
+        if price is None:
+            price = float(df['close'].iloc[-1])
+
         # 4. Ejecutar acciones basadas en la señal
         if signal == 'hold':
             print(f"[{pd.Timestamp.now().strftime('%H:%M')}] {mensaje}")
