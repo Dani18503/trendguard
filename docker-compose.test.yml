@@ -1,0 +1,29 @@
+# TrendGuard - Docker Compose TEST
+# Contenedor gemelo para desarrollo de Fase 7.
+# NO TOCA PRODUCCION. NO envia ordenes a Binance.
+
+services:
+  trendguard-bot-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: trendguard:test
+    container_name: trendguard-bot-test
+    restart: "no"
+    env_file: .env
+    working_dir: /home/ubuntu/trendguard
+    command: sleep infinity
+    volumes:
+      - ./state_test.json:/home/ubuntu/trendguard/state.json
+      - ./runtime_config_test.json:/home/ubuntu/trendguard/runtime_config.json
+    networks:
+      - trendguard_trendguard-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  trendguard_trendguard-net:
+    external: true

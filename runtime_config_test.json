@@ -1,0 +1,25 @@
+{
+  "symbol": "BTC/USDT:USDT",
+  "risk_per_trade": 0.02,
+  "timeframe": "1d",
+  "leverage": 1,
+  "mode": "simple",
+
+  "assets": {
+    "BTC/USDT:USDT": { "enabled": true,  "risk_per_trade": 0.02 },
+    "ETH/USDT:USDT": { "enabled": true,  "risk_per_trade": 0.02 },
+    "SOL/USDT:USDT": { "enabled": true,  "risk_per_trade": 0.02 }
+  },
+
+  "drawdown": {
+    "max_daily_pct": 0.03,
+    "reset_hour_utc": 0,
+    "action": "close_and_stop"
+  },
+
+  "correlation": {
+    "window_days": 30,
+    "block_threshold": 0.85,
+    "half_risk_threshold": 0.70
+  }
+}
