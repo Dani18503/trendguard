@@ -1,1 +1,12 @@
-{"current_position": "long", "entry_price": 85935.6, "max_price": 85935.6, "min_price": 85935.6, "cantidad": 0.0886}
+{
+  "current_position": null,
+  "entry_price": 0.0,
+  "max_price": 0.0,
+  "min_price": 0.0,
+  "cantidad": 0.0,
+  "drawdown": {
+    "date_utc": "2026-10-09",
+    "day_start_equity": 4700.0,
+    "triggered_today": false
+  }
+}
