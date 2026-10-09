@@ -11,7 +11,7 @@ COPY panel/requirements.txt ./panel/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir -r panel/requirements.txt
 
-COPY bot.py bot_multi.py config.py indicators.py strategy.py notifier.py multi_asset.py risk_manager.py ./
+COPY bot.py config.py indicators.py strategy.py notifier.py ./
 COPY panel/ ./panel/
 
 ENV PYTHONUNBUFFERED=1

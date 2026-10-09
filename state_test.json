@@ -1,12 +1,24 @@
 {
-  "current_position": null,
-  "entry_price": 0.0,
-  "max_price": 0.0,
-  "min_price": 0.0,
-  "cantidad": 0.0,
-  "drawdown": {
-    "date_utc": "2026-10-09",
-    "day_start_equity": 4700.0,
-    "triggered_today": false
-  }
+  "BTC/USDT:USDT": {
+    "current_position": null,
+    "entry_price": 0.0,
+    "max_price": 0.0,
+    "min_price": 0.0,
+    "cantidad": 0.0
+  },
+  "ETH/USDT:USDT": {
+    "current_position": null,
+    "entry_price": 0.0,
+    "max_price": 0.0,
+    "min_price": 0.0,
+    "cantidad": 0.0
+  },
+  "SOL/USDT:USDT": {
+    "current_position": null,
+    "entry_price": 0.0,
+    "max_price": 0.0,
+    "min_price": 0.0,
+    "cantidad": 0.0
+  },
+  "drawdown": {}
 }

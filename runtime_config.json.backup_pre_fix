@@ -1,0 +1,7 @@
+{
+  "symbol": "BTC/USDT:USDT",
+  "risk_per_trade": 0.01,
+  "timeframe": "15m",
+  "leverage": 3,
+  "mode": "simple"
+}
