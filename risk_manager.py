@@ -137,3 +137,55 @@ if __name__ == "__main__":
     print(f"  BTC-SOL (esperado < 0.70): {corr_ac:.4f} -> {get_correlation_action(corr_ac)}")
 
     print("\n=== FIN TEST ===")
+
+
+# ============================================================
+# BLOQUE 2: VALIDACION DE RIESGO
+# ============================================================
+
+def validate_risk_pct(value, min_pct=0.001, max_pct=0.10, default=0.02):
+    """
+    Valida y normaliza el riesgo por operacion.
+
+    Args:
+        value: valor a validar (float, str, None)
+        min_pct: minimo permitido (0.001 = 0.1%)
+        max_pct: maximo permitido (0.10 = 10%)
+        default: valor por defecto si falla la validacion
+
+    Returns:
+        float: valor validado y clampeado
+    """
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return default
+
+    if v != v:  # NaN
+        return default
+
+    if v < min_pct:
+        return min_pct
+    if v > max_pct:
+        return max_pct
+    return v
+
+
+def load_risk_from_config(config, asset=None):
+    """
+    Lee el riesgo desde runtime_config.json.
+
+    Prioridad:
+      1. config['assets'][asset]['risk_per_trade'] si asset especificado
+      2. config['risk_per_trade'] global
+      3. default 0.02
+    """
+    if asset and 'assets' in config:
+        asset_conf = config['assets'].get(asset, {})
+        if 'risk_per_trade' in asset_conf:
+            return validate_risk_pct(asset_conf['risk_per_trade'])
+
+    if 'risk_per_trade' in config:
+        return validate_risk_pct(config['risk_per_trade'])
+
+    return validate_risk_pct(None)
