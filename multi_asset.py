@@ -145,3 +145,122 @@ def migrate_state_to_multi(state, config, default_symbol="BTC/USDT:USDT"):
         migrated["drawdown"] = state["drawdown"]
 
     return migrated, True
+
+
+# ============================================================
+# BLOQUE 4: CORRELACION ENTRE ACTIVOS
+# ============================================================
+
+from risk_manager import calculate_correlation, get_correlation_action
+
+
+def get_open_symbols(state):
+    """Retorna lista de simbolos con posicion abierta."""
+    open_syms = []
+    for key, val in state.items():
+        if key in ("drawdown", "correlation"):
+            continue
+        if isinstance(val, dict) and val.get("current_position"):
+            open_syms.append(key)
+    return open_syms
+
+
+def check_correlation_for_signal(symbol, dataframes, state, config):
+    """
+    Determina si una senal de entrada debe bloquearse o reducir riesgo por correlacion.
+
+    Returns:
+        dict con: action ('block'|'half_risk'|'normal'), max_corr (float),
+                  correlated_with (str|None)
+    """
+    corr_conf = config.get("correlation", {})
+    block_thresh = corr_conf.get("block_threshold", 0.85)
+    half_thresh = corr_conf.get("half_risk_threshold", 0.70)
+    window = corr_conf.get("window_days", 30)
+
+    open_syms = get_open_symbols(state)
+
+    # Sin posiciones abiertas -> normal
+    if not open_syms:
+        return {"action": "normal", "max_corr": 0.0, "correlated_with": None}
+
+    # Sin datos del activo nuevo -> no se puede calcular
+    if symbol not in dataframes:
+        return {"action": "normal", "max_corr": 0.0, "correlated_with": None}
+
+    df_new = dataframes[symbol]
+    if len(df_new) < window + 1:
+        return {"action": "normal", "max_corr": 0.0, "correlated_with": None}
+
+    returns_new = df_new['close'].pct_change().dropna()
+
+    max_corr = 0.0
+    worst_symbol = None
+
+    for other in open_syms:
+        if other == symbol:
+            continue
+        if other not in dataframes:
+            continue
+        df_other = dataframes[other]
+        if len(df_other) < window + 1:
+            continue
+
+        returns_other = df_other['close'].pct_change().dropna()
+
+        # Alinear por indice comun
+        aligned = pd.concat([returns_new, returns_other], axis=1, join='inner')
+        if len(aligned) < 2:
+            continue
+
+        corr = aligned.iloc[:, 0].corr(aligned.iloc[:, 1])
+        if corr is None or pd.isna(corr):
+            continue
+
+        if corr > max_corr:
+            max_corr = float(corr)
+            worst_symbol = other
+
+    action = get_correlation_action(max_corr, block_thresh, half_thresh)
+    return {"action": action, "max_corr": max_corr, "correlated_with": worst_symbol}
+
+
+def apply_correlation_filter(symbol, signal, dataframes, state, config):
+    """
+    Aplica filtro de correlacion a una senal de entrada.
+    Solo afecta a senales 'buy' (nuevas entradas).
+
+    Returns:
+        dict con: allowed (bool), adjusted_signal (str), reason (str)
+    """
+    if signal != 'buy':
+        return {"allowed": True, "adjusted_signal": signal, "reason": "no es entrada"}
+
+    corr_result = check_correlation_for_signal(symbol, dataframes, state, config)
+    action = corr_result["action"]
+
+    if action == "block":
+        return {
+            "allowed": False,
+            "adjusted_signal": "hold",
+            "reason": f"correlacion {corr_result['max_corr']:.3f} con {corr_result['correlated_with']} > 0.85 (BLOQUEADO)",
+            "corr": corr_result["max_corr"],
+            "with": corr_result["correlated_with"],
+        }
+    elif action == "half_risk":
+        return {
+            "allowed": True,
+            "adjusted_signal": "buy",
+            "reason": f"correlacion {corr_result['max_corr']:.3f} con {corr_result['correlated_with']} -> HALF RISK",
+            "corr": corr_result["max_corr"],
+            "with": corr_result["correlated_with"],
+            "half_risk": True,
+        }
+    else:
+        return {
+            "allowed": True,
+            "adjusted_signal": "buy",
+            "reason": "correlacion baja, riesgo normal",
+            "corr": corr_result["max_corr"],
+            "with": corr_result["correlated_with"],
+        }
