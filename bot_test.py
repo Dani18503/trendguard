@@ -55,7 +55,7 @@ def build_report(results, equity, dd_state, max_dd):
         "\U0001F4CA Reporte TrendGuard MULTI-ACTIVO",
         f"\U0001F550 Hora UTC: {now}",
         f"\U0001F4B0 Equity: ${equity:,.2f}",
-        f"\U0001F6E1\uFE0F Drawdown: {dd_state.get('drawdown_pct', 0):.2%} / Limite {max_dd:.2%}",
+        f"\U0001F6E1\uFE0F Drawdown: {dd_state.get('_report_pct', 0):.2%} / Limite {max_dd:.2%}",
         "",
     ]
     for sym, r in results.items():
@@ -114,7 +114,8 @@ dd_state = rm.reset_drawdown_if_new_day(state.get("drawdown", {}), equity)
 state["drawdown"] = dd_state
 
 triggered, pct = rm.check_daily_drawdown(equity, dd_state["day_start_equity"], max_dd)
-dd_state["drawdown_pct"] = pct
+# Mostrar 0% si el equity subio (no negativo)
+dd_state["_report_pct"] = max(0.0, pct)
 state["drawdown"] = dd_state
 
 log(f"Drawdown dia: {pct:.4%} | Trigger: {triggered} | Ya disparado: {dd_state.get('triggered_today')}")
