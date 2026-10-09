@@ -42,18 +42,35 @@ def check_daily_drawdown(current_equity, day_start_equity, max_daily_pct=0.03):
 
 def reset_drawdown_if_new_day(drawdown_state, current_equity):
     """
-    Resetea el estado del drawdown si cambio el dia UTC.
+    Resetea el estado del drawdown si:
+      1. Cambio el dia UTC
+      2. El day_start_equity es absurdo (>50% de diferencia = state viejo/migracion/deposito)
 
     Returns:
         dict actualizado
     """
     today = get_today_utc()
+
+    # Caso 1: cambio de dia
     if drawdown_state.get("date_utc") != today:
         return {
             "date_utc": today,
             "day_start_equity": current_equity,
             "triggered_today": False
         }
+
+    # Caso 2: day_start_equity absurdo (guardado viejo o equity cambio drasticamente)
+    day_start = drawdown_state.get("day_start_equity", 0)
+    if day_start > 0:
+        diff_pct = abs(day_start - current_equity) / day_start
+        if diff_pct > 0.50:
+            print(f"[!] Salvaguarda: day_start_equity=${day_start:,.2f} muy lejos del actual ${current_equity:,.2f} ({diff_pct:.1%}). Reseteando.")
+            return {
+                "date_utc": today,
+                "day_start_equity": current_equity,
+                "triggered_today": False
+            }
+
     return drawdown_state
 
 
