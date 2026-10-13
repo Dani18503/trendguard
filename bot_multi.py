@@ -17,6 +17,13 @@ import multi_asset
 
 load_dotenv('/home/ubuntu/trendguard/.env')
 
+# --- VERIFICACIÓN DE LICENCIA (FASE 8) ---
+from licensing import validate_license
+if not validate_license(license_file='/home/ubuntu/trendguard/license.lic', public_key_path='/home/ubuntu/trendguard/public_key.pem'):
+    print('🚫 LICENCIA INVÁLIDA O EXPIRADA. EL BOT NO ARRANCARÁ.')
+    exit(1)
+# -----------------------------------------
+
 CONFIG_FILE = '/home/ubuntu/trendguard/runtime_config.json'
 STATE_FILE = '/home/ubuntu/trendguard/state.json'
 

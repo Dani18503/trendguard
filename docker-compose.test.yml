@@ -16,6 +16,8 @@ services:
     volumes:
       - ./state_test.json:/home/ubuntu/trendguard/state.json
       - ./runtime_config_test.json:/home/ubuntu/trendguard/runtime_config.json
+      - ./license.lic:/home/ubuntu/trendguard/license.lic
+      - ./public_key.pem:/home/ubuntu/trendguard/public_key.pem
     networks:
       - trendguard_trendguard-net
     logging:

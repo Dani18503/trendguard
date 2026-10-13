@@ -32,3 +32,6 @@ Thumbs.db
 *.tmp
 *.bak
 *.swp
+secure/
+*.lic
+private_key.pem
